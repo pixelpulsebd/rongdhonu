@@ -1,0 +1,192 @@
+{
+  "formatVersion": 2,
+  "table": "work_items",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "slug",
+        "type": "string",
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "title_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "category_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "description_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "client_name",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "location",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "year",
+        "type": "integer",
+        "nullable": true,
+        "description": "Four-digit project year, or null when not supplied."
+      },
+      {
+        "name": "image_url",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "sort_order",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": true
+      }
+    ],
+    "uniqueConstraints": [
+      [
+        "slug"
+      ]
+    ]
+  },
+  "rows": [
+    {
+      "id": 1,
+      "slug": "residential-interior-refresh",
+      "title": "Residential Interior Refresh",
+      "title_bn": "রেসিডেনশিয়াল ইন্টেরিয়র রিফ্রেশ",
+      "category": "Residential Renovation",
+      "category_bn": "আবাসিক রেনোভেশন",
+      "description": "A sample portfolio entry for a coordinated interior repaint and surface refresh. Replace with a verified project description and photos before publishing.",
+      "description_bn": "সমন্বিত ইন্টেরিয়র পেইন্টিং ও সারফেস রিফ্রেশের একটি নমুনা পোর্টফোলিও এন্ট্রি। প্রকাশের আগে যাচাইকৃত প্রকল্পের বিবরণ ও ছবি দিয়ে প্রতিস্থাপন করুন।",
+      "client_name": "Sample client",
+      "location": "Dhaka, Bangladesh",
+      "year": 2025,
+      "image_url": null,
+      "sort_order": 1,
+      "active": false,
+      "created_at": "2026-10-27T00:00:00+00:00",
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 2,
+      "slug": "office-color-renewal",
+      "title": "Office Color Renewal",
+      "title_bn": "অফিস কালার রিনিউয়াল",
+      "category": "Commercial Painting",
+      "category_bn": "বাণিজ্যিক পেইন্টিং",
+      "description": "A sample case study for refreshing an office with a practical, coordinated color palette. Replace with verified project details.",
+      "description_bn": "সমন্বিত রঙের মাধ্যমে অফিস রিফ্রেশ করার নমুনা কেস স্টাডি। যাচাইকৃত তথ্য দিয়ে প্রতিস্থাপন করুন।",
+      "client_name": "Sample client",
+      "location": "Dhaka, Bangladesh",
+      "year": 2025,
+      "image_url": null,
+      "sort_order": 2,
+      "active": false,
+      "created_at": "2026-10-27T00:00:00+00:00",
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 3,
+      "slug": "feature-wall-finish",
+      "title": "Decorative Feature Wall",
+      "title_bn": "ডেকোরেটিভ ফিচার ওয়াল",
+      "category": "Decorative Finish",
+      "category_bn": "ডেকোরেটিভ ফিনিশ",
+      "description": "A sample showcase for decorative texture or marble-effect finishes on a feature wall. Use only after adding authentic project imagery.",
+      "description_bn": "ফিচার ওয়ালে ডেকোরেটিভ টেক্সচার বা মার্বেল-ইফেক্ট ফিনিশের নমুনা। আসল প্রকল্পের ছবি যুক্ত করে ব্যবহার করুন।",
+      "client_name": "Sample client",
+      "location": "Dhaka, Bangladesh",
+      "year": 2024,
+      "image_url": null,
+      "sort_order": 3,
+      "active": false,
+      "created_at": "2026-10-27T00:00:00+00:00",
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 4,
+      "slug": "surface-preparation",
+      "title": "Wall Surface Preparation",
+      "title_bn": "দেয়ালের সারফেস প্রস্তুতি",
+      "category": "Surface Preparation",
+      "category_bn": "সারফেস প্রস্তুতি",
+      "description": "A sample project highlighting skim-coat preparation and smooth finishing before paint application.",
+      "description_bn": "পেইন্টিংয়ের আগে স্কিম-কোট ও মসৃণ ফিনিশিং তুলে ধরা নমুনা প্রকল্প।",
+      "client_name": "Sample client",
+      "location": "Dhaka, Bangladesh",
+      "year": 2024,
+      "image_url": null,
+      "sort_order": 4,
+      "active": false,
+      "created_at": "2026-10-27T00:00:00+00:00",
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 5,
+      "slug": "property-renovation",
+      "title": "Property Renovation & Repaint",
+      "title_bn": "প্রপার্টি রেনোভেশন ও পুনরায় পেইন্টিং",
+      "category": "Renovation",
+      "category_bn": "রেনোভেশন",
+      "description": "A sample end-to-end repaint concept for a property refresh. Replace with an actual project record before publishing.",
+      "description_bn": "প্রপার্টি রিফ্রেশের জন্য সম্পূর্ণ পুনরায় পেইন্টিংয়ের নমুনা ধারণা। প্রকাশের আগে প্রকৃত প্রকল্পের তথ্য দিয়ে প্রতিস্থাপন করুন।",
+      "client_name": "Sample client",
+      "location": "Dhaka, Bangladesh",
+      "year": 2025,
+      "image_url": null,
+      "sort_order": 5,
+      "active": false,
+      "created_at": "2026-10-27T00:00:00+00:00",
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    }
+  ],
+  "nextId": 6,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

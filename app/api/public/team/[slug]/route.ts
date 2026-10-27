@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getTeamBySlug } from "@/lib/content";
+import { getPublicTeamMemberData } from "@/app/server/api/public/team";
 
 export async function GET(
   _request: Request,
@@ -8,10 +8,10 @@ export async function GET(
   const { slug } = await context.params;
 
   try {
-    const member = await getTeamBySlug(slug);
-    if (!member) return NextResponse.json({ error: "Team member not found." }, { status: 404 });
+    const data = await getPublicTeamMemberData(slug);
+    if (!data.member) return NextResponse.json({ error: "Team member not found." }, { status: 404 });
     return NextResponse.json(
-      { member },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

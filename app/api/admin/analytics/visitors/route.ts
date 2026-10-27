@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { getVisitorAnalytics, type VisitorQuery } from "@/lib/dashboard";
+import { getAdminVisitorAnalyticsData } from "@server/api/admin/analytics/visitors";
+import type { VisitorQuery } from "@/lib/dashboard";
 
 const SORTS: VisitorQuery["sort"][] = ["visitorId", "firstSeenAt", "lastSeenAt", "visitCount", "sessionCount", "deviceType", "browser", "operatingSystem", "country", "city"];
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
   const offset = Math.max(0, Number(url.searchParams.get("offset") || 0));
 
   try {
-    const result = await getVisitorAnalytics({
+    const result = await getAdminVisitorAnalyticsData({
       search: url.searchParams.get("search") || "",
       device: url.searchParams.get("device") || "",
       country: url.searchParams.get("country") || "",

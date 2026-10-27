@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
-import { getDashboardSummary } from "@/lib/dashboard";
+import { getAdminDashboardData } from "@server/api/admin/dashboard";
 
 export async function GET(request: Request) {
   const session = await getAdminSession();
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
   try {
     const days = Number(new URL(request.url).searchParams.get("days") || 30);
-    const summary = await getDashboardSummary(days);
+    const summary = await getAdminDashboardData(days);
     return NextResponse.json(summary, {
       headers: { "Cache-Control": "private, no-store" },
     });

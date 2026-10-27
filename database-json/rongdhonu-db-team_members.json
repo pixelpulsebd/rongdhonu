@@ -1,0 +1,137 @@
+{
+  "formatVersion": 2,
+  "table": "team_members",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "slug",
+        "type": "string",
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "name_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "role",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "role_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "bio",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "bio_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "photo_url",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "sort_order",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "nullable": false
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": false
+      }
+    ],
+    "uniqueConstraints": [
+      [
+        "slug"
+      ]
+    ]
+  },
+  "rows": [
+    {
+      "id": 1,
+      "slug": "sample-project-lead",
+      "name": "Sample Project Lead",
+      "name_bn": "নমুনা প্রকল্প প্রধান",
+      "role": "Project Lead",
+      "role_bn": "প্রকল্প প্রধান",
+      "bio": "Demo profile only. Replace with the person's verified name, biography and approved photo.",
+      "bio_bn": "শুধুমাত্র ডেমো প্রোফাইল। যাচাইকৃত নাম, জীবনী ও অনুমোদিত ছবি দিয়ে প্রতিস্থাপন করুন।",
+      "photo_url": null,
+      "sort_order": 1,
+      "active": false,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 2,
+      "slug": "sample-site-supervisor",
+      "name": "Sample Site Supervisor",
+      "name_bn": "নমুনা সাইট সুপারভাইজার",
+      "role": "Site Supervisor",
+      "role_bn": "সাইট সুপারভাইজার",
+      "bio": "Demo profile only. Replace with verified staff information before publishing.",
+      "bio_bn": "শুধুমাত্র ডেমো প্রোফাইল। প্রকাশের আগে যাচাইকৃত কর্মীর তথ্য দিয়ে প্রতিস্থাপন করুন।",
+      "photo_url": null,
+      "sort_order": 2,
+      "active": false,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 3,
+      "slug": "sample-design-consultant",
+      "name": "Sample Design Consultant",
+      "name_bn": "নমুনা ডিজাইন কনসালট্যান্ট",
+      "role": "Design Consultant",
+      "role_bn": "ডিজাইন কনসালট্যান্ট",
+      "bio": "Demo profile only. Replace with verified staff information before publishing.",
+      "bio_bn": "শুধুমাত্র ডেমো প্রোফাইল। প্রকাশের আগে যাচাইকৃত কর্মীর তথ্য দিয়ে প্রতিস্থাপন করুন।",
+      "photo_url": null,
+      "sort_order": 3,
+      "active": false,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": 4,
+      "slug": "sample-client-coordinator",
+      "name": "Sample Client Coordinator",
+      "name_bn": "নমুনা ক্লায়েন্ট কোঅর্ডিনেটর",
+      "role": "Client Coordinator",
+      "role_bn": "ক্লায়েন্ট কোঅর্ডিনেটর",
+      "bio": "Demo profile only. Replace with verified staff information before publishing.",
+      "bio_bn": "শুধুমাত্র ডেমো প্রোফাইল। প্রকাশের আগে যাচাইকৃত কর্মীর তথ্য দিয়ে প্রতিস্থাপন করুন।",
+      "photo_url": null,
+      "sort_order": 4,
+      "active": false,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    }
+  ],
+  "nextId": 5,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

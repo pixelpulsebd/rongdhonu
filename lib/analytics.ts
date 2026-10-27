@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { query } from "./db";
+import { allocateId, mutateTable, timestamp } from "@/lib/drive-store";
 
 export interface VisitorPayload {
   visitorId: string;
@@ -26,24 +26,20 @@ export interface VisitorPayload {
 
 const MAX_TEXT = 1000;
 const MAX_PATH = 500;
-const ANALYTICS_SALT = process.env.ANALYTICS_SALT || process.env.NEXTAUTH_SECRET || "rongdhonu-analytics";
-
+const ANALYTICS_SALT = process.env.ANALYTICS_SALT || process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET || "rongdhonu-analytics";
 function clean(value: unknown, max = MAX_TEXT): string | null {
   if (value == null) return null;
   const text = String(value).trim();
   return text ? text.slice(0, max) : null;
 }
-
 function int(value: unknown, max = 10000): number | null {
   const n = Number(value);
   return Number.isInteger(n) && n >= 0 && n <= max ? n : null;
 }
-
 export function hashIp(ip: string | null): string | null {
   if (!ip) return null;
   return createHash("sha256").update(`${ANALYTICS_SALT}:${ip}`).digest("hex");
 }
-
 export function maskIp(ip: string | null): string | null {
   if (!ip) return null;
   const value = ip.trim();
@@ -54,13 +50,11 @@ export function maskIp(ip: string | null): string | null {
   if (value.includes(":")) return value.split(":").slice(0, 2).join(":") + ":****";
   return "***";
 }
-
 export function getRequestIp(request: Request): string | null {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0]?.trim() || null;
   return request.headers.get("x-real-ip")?.trim() || null;
 }
-
 export function isBot(userAgent: string | null): boolean {
   if (!userAgent) return false;
   return /bot|crawler|spider|crawling|slurp|bingpreview|facebookexternalhit|whatsapp/i.test(userAgent);
@@ -71,94 +65,35 @@ export async function recordVisitor(payload: VisitorPayload, request: Request): 
   const sessionId = clean(payload.sessionId, 80);
   const path = clean(payload.path, MAX_PATH);
   if (!visitorId || !sessionId || !path) return;
-
   const userAgent = clean(payload.userAgent, 1200);
   if (isBot(userAgent)) return;
-
   const ip = getRequestIp(request);
-  const country = clean(request.headers.get("x-vercel-ip-country"), 64);
-  const region = clean(request.headers.get("x-vercel-ip-country-region"), 128);
-  const city = clean(request.headers.get("x-vercel-ip-city"), 128);
-  const referrer = clean(payload.referrer, MAX_PATH);
-  const language = clean(payload.language, 64);
-  const languages = clean(payload.languages, 400);
-  const timezone = clean(payload.timezone, 120);
-  const platform = clean(payload.platform, 120);
-  const browser = clean(payload.browser, 120);
-  const operatingSystem = clean(payload.operatingSystem, 120);
-  const deviceType = clean(payload.deviceType, 40);
-  const pageTitle = clean(payload.pageTitle, 300);
-  const landingPath = path;
-
-  await query(
-    `INSERT INTO site_visitors (
-       visitor_id, first_seen_at, last_seen_at, visit_count, session_count,
-       ip_hash, ip_masked, user_agent, browser, operating_system, device_type,
-       language, languages, timezone, platform, screen_width, screen_height,
-       viewport_width, viewport_height, cookies_enabled, country, region, city,
-       referrer, landing_path, last_path, updated_at
-     ) VALUES (
-       $1, now(), now(), 1, $2,
-       $3, $4, $5, $6, $7, $8,
-       $9, $10, $11, $12, $13, $14,
-       $15, $16, $17, $18, $19, $20,
-       $21, $22, $23, now()
-     )
-     ON CONFLICT (visitor_id) DO UPDATE SET
-       last_seen_at = now(),
-       visit_count = site_visitors.visit_count + 1,
-       session_count = site_visitors.session_count + EXCLUDED.session_count,
-       ip_hash = COALESCE(EXCLUDED.ip_hash, site_visitors.ip_hash),
-       ip_masked = COALESCE(EXCLUDED.ip_masked, site_visitors.ip_masked),
-       user_agent = COALESCE(EXCLUDED.user_agent, site_visitors.user_agent),
-       browser = COALESCE(EXCLUDED.browser, site_visitors.browser),
-       operating_system = COALESCE(EXCLUDED.operating_system, site_visitors.operating_system),
-       device_type = COALESCE(EXCLUDED.device_type, site_visitors.device_type),
-       language = COALESCE(EXCLUDED.language, site_visitors.language),
-       languages = COALESCE(EXCLUDED.languages, site_visitors.languages),
-       timezone = COALESCE(EXCLUDED.timezone, site_visitors.timezone),
-       platform = COALESCE(EXCLUDED.platform, site_visitors.platform),
-       screen_width = COALESCE(EXCLUDED.screen_width, site_visitors.screen_width),
-       screen_height = COALESCE(EXCLUDED.screen_height, site_visitors.screen_height),
-       viewport_width = COALESCE(EXCLUDED.viewport_width, site_visitors.viewport_width),
-       viewport_height = COALESCE(EXCLUDED.viewport_height, site_visitors.viewport_height),
-       cookies_enabled = COALESCE(EXCLUDED.cookies_enabled, site_visitors.cookies_enabled),
-       country = COALESCE(EXCLUDED.country, site_visitors.country),
-       region = COALESCE(EXCLUDED.region, site_visitors.region),
-       city = COALESCE(EXCLUDED.city, site_visitors.city),
-       referrer = COALESCE(EXCLUDED.referrer, site_visitors.referrer),
-       last_path = EXCLUDED.last_path,
-       updated_at = now()`,
-    [
-      visitorId,
-      payload.isNewSession ? 1 : 0,
-      hashIp(ip),
-      maskIp(ip),
-      userAgent,
-      browser,
-      operatingSystem,
-      deviceType,
-      language,
-      languages,
-      timezone,
-      platform,
-      int(payload.screenWidth, 10000),
-      int(payload.screenHeight, 10000),
-      int(payload.viewportWidth, 10000),
-      int(payload.viewportHeight, 10000),
-      typeof payload.cookiesEnabled === "boolean" ? payload.cookiesEnabled : null,
-      country,
-      region,
-      city,
-      referrer,
-      landingPath,
-      path,
-    ],
-  );
-
-  await query(
-    `INSERT INTO site_visit_events (visitor_id, session_id, visited_at, path, page_title, referrer, event_name)
-     VALUES ($1, $2, now(), $3, $4, $5, 'page_view')`,
-    [visitorId, sessionId, path, pageTitle, referrer],
-  );
+  const now = timestamp();
+  const fields = {
+    ip_hash: hashIp(ip), ip_masked: maskIp(ip), user_agent: userAgent,
+    browser: clean(payload.browser, 120), operating_system: clean(payload.operatingSystem, 120), device_type: clean(payload.deviceType, 40),
+    language: clean(payload.language, 64), languages: clean(payload.languages, 400), timezone: clean(payload.timezone, 120), platform: clean(payload.platform, 120),
+    screen_width: int(payload.screenWidth), screen_height: int(payload.screenHeight), viewport_width: int(payload.viewportWidth), viewport_height: int(payload.viewportHeight),
+    cookies_enabled: typeof payload.cookiesEnabled === "boolean" ? payload.cookiesEnabled : null,
+    country: clean(request.headers.get("x-vercel-ip-country"), 64), region: clean(request.headers.get("x-vercel-ip-country-region"), 128),
+    city: clean(request.headers.get("x-vercel-ip-city"), 128), referrer: clean(payload.referrer, MAX_PATH), last_path: path,
+  };
+  await mutateTable("site_visitors", (document) => {
+    const existing = document.rows.find((row) => String(row.visitor_id) === visitorId);
+    if (existing) {
+      existing.last_seen_at = now;
+      existing.visit_count = Number(existing.visit_count ?? 0) + 1;
+      existing.session_count = Number(existing.session_count ?? 0) + (payload.isNewSession ? 1 : 0);
+      for (const [key, value] of Object.entries(fields)) if (value != null) existing[key] = value;
+      existing.updated_at = now;
+    } else {
+      document.rows.push({ visitor_id: visitorId, first_seen_at: now, last_seen_at: now, visit_count: 1, session_count: payload.isNewSession ? 1 : 0, landing_path: path, updated_at: now, ...fields });
+    }
+  });
+  await mutateTable("site_visit_events", (document) => {
+    document.rows.push({
+      id: allocateId(document), visitor_id: visitorId, session_id: sessionId, visited_at: now, path,
+      page_title: clean(payload.pageTitle, 300), referrer: clean(payload.referrer, MAX_PATH), event_name: "page_view",
+    });
+  });
 }

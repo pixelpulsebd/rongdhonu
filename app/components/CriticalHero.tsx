@@ -1,4 +1,5 @@
-import { getBusinessPublicSummary, getPrimaryHeroImage } from "@/lib/content";
+import { getPublicBusinessSummaryData } from "@server/api/public/business";
+import { getPublicPrimaryHeroData } from "@server/api/public/hero-images";
 import Navbar from "./Navbar";
 import Hero from "./Hero";
 import RongDhonuRenovationPageContent from "./RongDhonuRenovationPageContent";
@@ -8,9 +9,9 @@ import RongDhonuRenovationPageContent from "./RongDhonuRenovationPageContent";
  * one primary hero image. Lower CMS collections are loaded by their own sections later.
  */
 export default async function CriticalHero() {
-  const [business, initialHero] = await Promise.all([
-    getBusinessPublicSummary(),
-    getPrimaryHeroImage(),
+  const [{ business }, { initialHero }] = await Promise.all([
+    getPublicBusinessSummaryData(),
+    getPublicPrimaryHeroData(),
   ]);
 
   return (

@@ -1,50 +1,50 @@
 # Rong Dhonu production release notes
 
-This release separates website-submitted work reviews from admin-authored editorial reviews and completes the enquiry workflow.
+This release separates visitor-submitted work reviews from admin-authored editorial reviews and completes the enquiry workflow.
 
 ## Website reviews
 
-- Visitors can open any selected work, view published ratings/reviews and submit a 1–5 star review.
-- A submitted review is stored in `user_reviews` with `pending` moderation status.
+- Visitors can open a selected work, view published ratings/reviews, and submit a 1–5 star review.
+- A submitted review is stored in the `user_reviews` Google Drive JSON document with `pending` moderation status.
 - The browser receives an HTTP-only owner cookie containing a random review token; only that browser can edit or delete the matching review.
 - Editing returns the review to `pending` moderation.
 - Deleting removes the website-submitted review.
 - The public site never exposes reviewer email addresses.
-- Admins cannot edit or delete website review content. They can only set `visible` or `hidden`.
+- Admins cannot edit or delete website review content; they can set visibility status.
+- Application-level checks use normalized email and, when available, verified provider identity to prevent duplicate reviews for the same work.
 
 ## Admin notifications
 
 - `/api/admin/notifications` returns pending website-review and new-enquiry counts.
-- The admin navigation refreshes those indicators every 30 seconds.
-- Dashboard metrics also surface new website reviews and new enquiries.
+- Dashboard indicators refresh periodically.
+- Dashboard metrics surface new website reviews and new enquiries.
 
 ## Enquiries
 
-- Enquiries are presented as contained cards with search and status filters.
-- Email, call and open actions mark a previously-new enquiry as `read`.
-- Full details open in a wrapped modal; email/call actions remain available there.
-- Archive, restore and mark-new actions provide explicit loading/status feedback.
+- Enquiries appear as contained cards with search and status filters.
+- Email, call, and open actions mark a previously-new enquiry as `read`.
+- Archive, restore, and mark-new actions provide explicit loading/status feedback.
+- New enquiries are saved to Google Drive. If SMTP is configured, a notification email is sent after the save; mail failure does not remove the saved enquiry.
 
 ## Public endpoint protection
 
 - Contact and review POST/PUT/DELETE routes enforce same-origin browser requests when an Origin header is supplied.
 - Contact and review forms include a hidden honeypot to reduce basic automated spam.
+- Public forms require explicit consent where configured.
 
-## Database migration
+## Release verification
 
-Run `npm run db:migrate`. The migration runner applies `db/schema.sql`, then verifies every SQL migration in filename order. Migrations are idempotent and are deliberately re-checked so a stale `schema_migrations` row cannot mask a missing table/column.
+Run:
 
-If the deployed app reports `relation \"user_reviews\" does not exist`, run `db/repair-user-reviews.sql` in the Neon SQL Editor and then run `npm run db:migrate`. This is the direct hotfix for databases that were created before the public review feature was added.
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npm run drive:check
+```
 
-For the existing production database, the relevant new migration is `db/migrations/20261002_user_reviews.sql`. It is idempotent and creates/backfills the owner-token column without dropping content.
+Then test `/admin/login`, dashboard editing, enquiry submission and notification, review submission/moderation/edit/delete, visitor analytics, and images against the intended Google Drive account. Verify SMTP delivery separately.
 
-## Verification performed in this environment
+## Storage caveat
 
-- TypeScript/TSX syntactic parse completed for all 130 source files.
-- No browser `alert()`, `confirm()` or `prompt()` calls remain in `app`, `lib` or `scripts`.
-- Mobile form-control CSS uses a 16px minimum on small screens to prevent iOS Safari focus zoom.
-- A full `npm ci` / production build could not be completed in this sandbox because the npm registry was not reachable and the required dependency tarballs were not cached. The release therefore still needs a normal CI/Vercel `npm ci && npm run build` before deployment.
-
-### Public work review uniqueness
-
-Website reviews are limited to one active review per work per reviewer email address. PostgreSQL enforces this with `ux_user_reviews_work_email`; users edit their existing review instead of creating another. Deleting a review removes the active record and permits a new submission later.
+Google Drive writes replace JSON documents and are not relational transactions. Duplicate prevention is enforced by application logic, not by a cross-instance unique constraint. Mutations are serialized only inside one running Node.js process, so concurrent multi-instance writes can lose updates. Keep backups and use a single persistent app process for best effort.

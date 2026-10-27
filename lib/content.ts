@@ -1,110 +1,38 @@
 import "server-only";
-import { query, queryOne } from "./db";
-import { neonTableGet } from "./neon-data-api";
+
+import { readTable } from "@/lib/drive-store";
+import type { DriveRow } from "@/lib/drive-store";
 
 export interface BusinessProfile {
-  name: string;
-  shortName: string;
-  tagline: string;
-  phone: string;
-  email: string;
-  website: string;
-  address: string;
-  addressBn: string | null;
-  mapQuery: string;
-  logoUrl: string | null;
-  logoReversedUrl: string | null;
-  iconUrl: string | null;
-  teamSlug: string;
-  workSlug: string;
-  hasTeam: boolean;
-  hasWork: boolean;
+  name: string; shortName: string; tagline: string; phone: string; email: string; website: string;
+  address: string; addressBn: string | null; mapQuery: string; logoUrl: string | null;
+  logoReversedUrl: string | null; iconUrl: string | null; teamSlug: string; workSlug: string;
+  hasTeam: boolean; hasWork: boolean;
 }
-
 export interface ServiceRow {
-  id: string;
-  slug: string;
-  name: string;
-  nameBn: string | null;
-  category: string;
-  categoryBn: string | null;
-  description: string;
-  descriptionBn: string | null;
-  bestFor: string;
-  bestForBn: string | null;
-  accent: string;
-  imageUrl: string | null;
-  sortOrder: number;
-  active: boolean;
+  id: string; slug: string; name: string; nameBn: string | null; category: string; categoryBn: string | null;
+  description: string; descriptionBn: string | null; bestFor: string; bestForBn: string | null;
+  accent: string; imageUrl: string | null; sortOrder: number; active: boolean;
 }
-
 export interface ReviewRow {
-  id: number;
-  slug: string;
-  name: string;
-  role: string | null;
-  roleBn: string | null;
-  textEn: string;
-  textBn: string | null;
-  rating: number | null;
-  workId: number | null;
-  workSlug: string | null;
-  workTitle: string | null;
-  workTitleBn: string | null;
-  sortOrder: number;
-  active: boolean;
-  createdAt: string;
-  source?: "admin" | "user";
-  isPublic?: boolean;
+  id: number; slug: string; name: string; role: string | null; roleBn: string | null; textEn: string;
+  textBn: string | null; rating: number | null; workId: number | null; workSlug: string | null;
+  workTitle: string | null; workTitleBn: string | null; sortOrder: number; active: boolean;
+  createdAt: string; source?: "admin" | "user"; isPublic?: boolean;
 }
-
 export interface TeamMemberRow {
-  id: number;
-  slug: string;
-  name: string;
-  nameBn: string | null;
-  role: string;
-  roleBn: string | null;
-  bio: string | null;
-  bioBn: string | null;
-  photoUrl: string | null;
-  sortOrder: number;
-  active: boolean;
+  id: number; slug: string; name: string; nameBn: string | null; role: string; roleBn: string | null;
+  bio: string | null; bioBn: string | null; photoUrl: string | null; sortOrder: number; active: boolean;
 }
-
 export interface WorkRow {
-  id: number;
-  slug: string;
-  title: string;
-  titleBn: string | null;
-  category: string;
-  categoryBn: string | null;
-  description: string;
-  descriptionBn: string | null;
-  clientName: string | null;
-  location: string | null;
-  year: number | null;
-  imageUrl: string | null;
-  sortOrder: number;
-  active: boolean;
+  id: number; slug: string; title: string; titleBn: string | null; category: string; categoryBn: string | null;
+  description: string; descriptionBn: string | null; clientName: string | null; location: string | null;
+  year: number | null; imageUrl: string | null; sortOrder: number; active: boolean;
 }
-
-export interface HeroImageRow {
-  slot: string;
-  label: string;
-  imageUrl: string | null;
-  sortOrder: number;
-}
-
+export interface HeroImageRow { slot: string; label: string; imageUrl: string | null; sortOrder: number; }
 export interface ContactSubmissionRow {
-  id: number;
-  name: string;
-  email: string;
-  phone: string | null;
-  serviceInterest: string | null;
-  message: string;
-  status: "new" | "read" | "archived";
-  createdAt: string;
+  id: number; name: string; email: string; phone: string | null; serviceInterest: string | null;
+  message: string; status: "new" | "read" | "archived"; createdAt: string;
 }
 
 const str = (v: unknown): string | null => {
@@ -113,313 +41,117 @@ const str = (v: unknown): string | null => {
   return value ? value : null;
 };
 const safe = (v: unknown): string => str(v) ?? "";
+const num = (v: unknown): number => Number(v ?? 0);
+const bool = (v: unknown): boolean => v === true || v === "true" || v === "t" || v === 1;
+const dateString = (v: unknown): string => v == null ? "" : String(v);
 
-async function publicRows<T extends Record<string, unknown>>(
-  table: string,
-  params: Record<string, string | number | boolean | undefined>,
-  sql: string,
-  sqlParams: unknown[] = [],
-): Promise<T[]> {
-  try {
-    const neonRows = await neonTableGet<T>(table, params);
-    if (neonRows) return neonRows;
-  } catch (error) {
-    console.warn(`Neon Data API read failed for ${table}; falling back to PostgreSQL.`, error);
-  }
-  return query<T>(sql, sqlParams);
+function mapService(r: DriveRow): ServiceRow {
+  return { id: String(r.id), slug: safe(r.slug) || String(r.id), name: safe(r.name), nameBn: str(r.name_bn), category: safe(r.category), categoryBn: str(r.category_bn), description: safe(r.description), descriptionBn: str(r.description_bn), bestFor: safe(r.best_for), bestForBn: str(r.best_for_bn), accent: safe(r.accent) || "red", imageUrl: str(r.image_url), sortOrder: num(r.sort_order), active: bool(r.active) };
 }
-
-async function publicRow<T extends Record<string, unknown>>(
-  table: string,
-  params: Record<string, string | number | boolean | undefined>,
-  sql: string,
-  sqlParams: unknown[] = [],
-): Promise<T | null> {
-  const rows = await publicRows<T>(table, params, sql, sqlParams);
-  return rows[0] ?? null;
+function mapTeam(r: DriveRow): TeamMemberRow {
+  return { id: num(r.id), slug: safe(r.slug) || `team-${num(r.id)}`, name: safe(r.name), nameBn: str(r.name_bn), role: safe(r.role), roleBn: str(r.role_bn), bio: str(r.bio), bioBn: str(r.bio_bn), photoUrl: str(r.photo_url), sortOrder: num(r.sort_order), active: bool(r.active) };
+}
+function mapWork(r: DriveRow): WorkRow {
+  return { id: num(r.id), slug: safe(r.slug), title: safe(r.title), titleBn: str(r.title_bn), category: safe(r.category), categoryBn: str(r.category_bn), description: safe(r.description), descriptionBn: str(r.description_bn), clientName: str(r.client_name), location: str(r.location), year: r.year == null ? null : num(r.year), imageUrl: str(r.image_url), sortOrder: num(r.sort_order), active: bool(r.active) };
+}
+function mapReview(r: DriveRow, work?: DriveRow | null, source: "admin" | "user" = "admin"): ReviewRow {
+  const id = num(r.id);
+  const isUser = source === "user";
+  return {
+    id,
+    slug: isUser ? `user-review-${id}` : (safe(r.slug) || `review-${id}`),
+    name: safe(r.name), role: str(r.role), roleBn: str(r.role_bn),
+    textEn: safe(isUser ? r.review_text : r.text_en), textBn: str(r.text_bn),
+    rating: r.rating == null ? null : num(r.rating), workId: r.work_id == null ? null : num(r.work_id),
+    workSlug: str(work?.slug), workTitle: str(work?.title), workTitleBn: str(work?.title_bn),
+    sortOrder: isUser ? 100000 + id : num(r.sort_order), active: isUser ? true : bool(r.active),
+    createdAt: dateString(r.created_at ?? r.updated_at), source, isPublic: true,
+  };
 }
 
 export async function getBusinessProfile(): Promise<BusinessProfile | null> {
-  const row = await publicRow<Record<string, unknown>>(
-    "business_profile",
-    { id: "eq.1", limit: 1, select: "*" },
-    "SELECT * FROM business_profile WHERE id = 1",
-  );
+  const [rows, team, work] = await Promise.all([readTable("business_profile"), readTable("team_members"), readTable("work_items")]);
+  const row = rows.find((item) => num(item.id) === 1) ?? rows[0];
   if (!row) return null;
+  const name = safe(row.name);
+  const address = safe(row.address);
+  const savedMapQuery = safe(row.map_query);
+  const mapQuery = !savedMapQuery ? `${name}, ${address}`.trim() : savedMapQuery.toLowerCase().includes(name.toLowerCase()) ? savedMapQuery : `${name}, ${savedMapQuery}`;
   return {
-    name: safe(row.name),
-    shortName: safe(row.short_name),
-    tagline: safe(row.tagline),
-    phone: safe(row.phone),
-    email: safe(row.email),
-    website: safe(row.website),
-    address: safe(row.address),
-    addressBn: str(row.address_bn),
-    mapQuery: (() => {
-      const address = safe(row.address);
-      const saved = safe(row.map_query);
-      const businessName = safe(row.name);
-      if (!saved) return `${businessName}, ${address}`.trim();
-      return saved.toLowerCase().includes(businessName.toLowerCase()) ? saved : `${businessName}, ${saved}`;
-    })(),
-    logoUrl: str(row.logo_url),
-    logoReversedUrl: str(row.logo_reversed_url),
-    iconUrl: str(row.icon_url),
-    teamSlug: safe(row.team_slug) || "our-team",
-    workSlug: safe(row.work_slug) || "our-work",
-    hasTeam: Boolean(row.has_team),
-    hasWork: Boolean(row.has_work),
+    name, shortName: safe(row.short_name), tagline: safe(row.tagline), phone: safe(row.phone), email: safe(row.email), website: safe(row.website), address,
+    addressBn: str(row.address_bn), mapQuery, logoUrl: str(row.logo_url), logoReversedUrl: str(row.logo_reversed_url), iconUrl: str(row.icon_url),
+    teamSlug: safe(row.team_slug) || "our-team", workSlug: safe(row.work_slug) || "our-work",
+    hasTeam: team.some((item) => bool(item.active)), hasWork: work.some((item) => bool(item.active)),
   };
 }
 
 export async function getActiveServices(): Promise<ServiceRow[]> {
-  const rows = await publicRows<Record<string, unknown>>(
-    "services",
-    { active: "is.true", order: "sort_order.asc", select: "*" },
-    "SELECT * FROM services WHERE active = true ORDER BY sort_order ASC",
-  );
-  return rows.map((r) => ({
-    id: String(r.id),
-    slug: safe(r.slug) || String(r.id),
-    name: safe(r.name),
-    nameBn: str(r.name_bn),
-    category: safe(r.category),
-    categoryBn: str(r.category_bn),
-    description: safe(r.description),
-    descriptionBn: str(r.description_bn),
-    bestFor: safe(r.best_for),
-    bestForBn: str(r.best_for_bn),
-    accent: safe(r.accent),
-    imageUrl: str(r.image_url),
-    sortOrder: Number(r.sort_order),
-    active: Boolean(r.active),
-  }));
+  return (await readTable("services")).filter((r) => bool(r.active)).sort((a, b) => num(a.sort_order) - num(b.sort_order)).map(mapService);
 }
 
 export async function getActiveReviews(): Promise<ReviewRow[]> {
-  const rows = await query<Record<string, unknown>>(
-    `SELECT * FROM (
-       SELECT r.id::text AS source_id, r.id::bigint AS id, 'admin'::text AS source, r.slug, r.name, r.role, r.role_bn,
-              r.text_en, r.text_bn, r.rating, r.work_id, r.sort_order, r.active, r.created_at, r.updated_at,
-              w.slug AS work_slug, w.title AS work_title, w.title_bn AS work_title_bn
-       FROM reviews r
-       LEFT JOIN work_items w ON w.id = r.work_id
-       WHERE r.active = true
-       UNION ALL
-       SELECT ur.id::text AS source_id, ur.id::bigint AS id, 'user'::text AS source, NULL::text AS slug, ur.name, NULL::text AS role, NULL::text AS role_bn,
-              ur.review_text AS text_en, NULL::text AS text_bn, ur.rating, ur.work_id, 100000::integer + ur.id::integer AS sort_order,
-              true AS active, ur.created_at, ur.updated_at, w.slug AS work_slug, w.title AS work_title, w.title_bn AS work_title_bn
-       FROM user_reviews ur
-       JOIN work_items w ON w.id = ur.work_id
-       WHERE ur.status = 'visible' AND w.active = true
-     ) published_reviews
-     ORDER BY created_at DESC, id DESC`,
-  );
-  return rows.map((r) => ({
-    id: Number(r.id), slug: safe(r.source) === "user" ? `user-review-${Number(r.id)}` : (safe(r.slug) || `review-${Number(r.id)}`),
-    name: safe(r.name), role: str(r.role), roleBn: str(r.role_bn), textEn: safe(r.text_en), textBn: str(r.text_bn),
-    rating: r.rating == null ? null : Number(r.rating), workId: r.work_id == null ? null : Number(r.work_id),
-    workSlug: str(r.work_slug), workTitle: str(r.work_title), workTitleBn: str(r.work_title_bn), sortOrder: Number(r.sort_order),
-    active: Boolean(r.active), createdAt: String(r.created_at ?? r.updated_at ?? ""), source: safe(r.source) as "admin" | "user", isPublic: true,
-  }));
+  const [reviews, userReviews, works] = await Promise.all([readTable("reviews"), readTable("user_reviews"), readTable("work_items")]);
+  const workById = new Map(works.map((w) => [String(w.id), w]));
+  const adminRows = reviews.filter((r) => bool(r.active)).map((r) => mapReview(r, r.work_id == null ? null : workById.get(String(r.work_id)), "admin"));
+  const publicUserRows = userReviews.filter((r) => r.status === "visible" && workById.has(String(r.work_id)) && bool(workById.get(String(r.work_id))?.active)).map((r) => mapReview(r, workById.get(String(r.work_id)), "user"));
+  return [...adminRows, ...publicUserRows].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id);
 }
 
 export async function getActiveTeam(): Promise<TeamMemberRow[]> {
-  const rows = await publicRows<Record<string, unknown>>(
-    "team_members",
-    { active: "is.true", order: "sort_order.asc,id.asc", select: "*" },
-    "SELECT * FROM team_members WHERE active = true ORDER BY sort_order ASC, id ASC",
-  );
-  return rows.map((r) => ({
-    id: Number(r.id),
-    slug: safe(r.slug) || `team-${Number(r.id)}`,
-    name: safe(r.name),
-    nameBn: str(r.name_bn),
-    role: safe(r.role),
-    roleBn: str(r.role_bn),
-    bio: str(r.bio),
-    bioBn: str(r.bio_bn),
-    photoUrl: str(r.photo_url),
-    sortOrder: Number(r.sort_order),
-    active: Boolean(r.active),
-  }));
+  return (await readTable("team_members")).filter((r) => bool(r.active)).sort((a, b) => num(a.sort_order) - num(b.sort_order) || num(a.id) - num(b.id)).map(mapTeam);
 }
 
 export async function getActiveWork(): Promise<WorkRow[]> {
-  const rows = await publicRows<Record<string, unknown>>(
-    "work_items",
-    { active: "is.true", order: "sort_order.asc,id.asc", select: "*" },
-    "SELECT * FROM work_items WHERE active = true ORDER BY sort_order ASC, id ASC",
-  );
-  return rows.map((r) => ({
-    id: Number(r.id),
-    slug: safe(r.slug),
-    title: safe(r.title),
-    titleBn: str(r.title_bn),
-    category: safe(r.category),
-    categoryBn: str(r.category_bn),
-    description: safe(r.description),
-    descriptionBn: str(r.description_bn),
-    clientName: str(r.client_name),
-    location: str(r.location),
-    year: r.year == null ? null : Number(r.year),
-    imageUrl: str(r.image_url),
-    sortOrder: Number(r.sort_order),
-    active: Boolean(r.active),
-  }));
+  return (await readTable("work_items")).filter((r) => bool(r.active)).sort((a, b) => num(a.sort_order) - num(b.sort_order) || num(a.id) - num(b.id)).map(mapWork);
 }
 
 export async function getWorkBySlug(slug: string): Promise<WorkRow | null> {
-  const row = await publicRow<Record<string, unknown>>(
-    "work_items",
-    { slug: `eq.${slug}`, active: "is.true", limit: 1, select: "*" },
-    "SELECT * FROM work_items WHERE slug = $1 AND active = true",
-    [slug],
-  );
-  if (!row) return null;
-  return {
-    id: Number(row.id), slug: safe(row.slug), title: safe(row.title), titleBn: str(row.title_bn),
-    category: safe(row.category), categoryBn: str(row.category_bn), description: safe(row.description),
-    descriptionBn: str(row.description_bn), clientName: str(row.client_name), location: str(row.location),
-    year: row.year == null ? null : Number(row.year), imageUrl: str(row.image_url),
-    sortOrder: Number(row.sort_order), active: Boolean(row.active),
-  };
+  const row = (await readTable("work_items")).find((r) => r.slug === slug && bool(r.active));
+  return row ? mapWork(row) : null;
 }
 
 export async function getTeamBySlug(slug: string): Promise<TeamMemberRow | null> {
-  const row = await publicRow<Record<string, unknown>>(
-    "team_members",
-    { slug: `eq.${slug}`, active: "is.true", limit: 1, select: "*" },
-    "SELECT * FROM team_members WHERE slug = $1 AND active = true",
-    [slug],
-  );
-  if (!row) return null;
-  return {
-    id: Number(row.id), slug: safe(row.slug) || `team-${Number(row.id)}`, name: safe(row.name), nameBn: str(row.name_bn),
-    role: safe(row.role), roleBn: str(row.role_bn), bio: str(row.bio), bioBn: str(row.bio_bn), photoUrl: str(row.photo_url),
-    sortOrder: Number(row.sort_order), active: Boolean(row.active),
-  };
+  const row = (await readTable("team_members")).find((r) => r.slug === slug && bool(r.active));
+  return row ? mapTeam(row) : null;
 }
 
 export async function getReviewsForWork(workId: number): Promise<ReviewRow[]> {
-  const rows = await query<Record<string, unknown>>(
-    `SELECT * FROM (
-       SELECT r.id::bigint AS id, 'admin'::text AS source, r.slug, r.name, r.role, r.role_bn, r.text_en, r.text_bn, r.rating,
-              r.work_id, r.sort_order, r.active, r.created_at, r.updated_at, w.slug AS work_slug, w.title AS work_title, w.title_bn AS work_title_bn
-       FROM reviews r
-       JOIN work_items w ON w.id = r.work_id
-       WHERE r.active = true AND r.work_id = $1
-       UNION ALL
-       SELECT ur.id::bigint AS id, 'user'::text AS source, NULL::text AS slug, ur.name, NULL::text AS role, NULL::text AS role_bn,
-              ur.review_text AS text_en, NULL::text AS text_bn, ur.rating, ur.work_id, 100000::integer + ur.id::integer AS sort_order, true AS active,
-              ur.created_at, ur.updated_at, w.slug AS work_slug, w.title AS work_title, w.title_bn AS work_title_bn
-       FROM user_reviews ur
-       JOIN work_items w ON w.id = ur.work_id
-       WHERE ur.work_id = $1 AND ur.status = 'visible'
-     ) related_reviews
-     ORDER BY CASE WHEN source = 'admin' THEN 0 ELSE 1 END, created_at DESC, id DESC`,
-    [workId],
-  );
-  return rows.map((r) => ({
-    id: Number(r.id), slug: safe(r.slug) || `user-review-${Number(r.id)}`, name: safe(r.name), role: str(r.role), roleBn: str(r.role_bn),
-    textEn: safe(r.text_en), textBn: str(r.text_bn), rating: r.rating == null ? null : Number(r.rating), workId: r.work_id == null ? null : Number(r.work_id),
-    workSlug: str(r.work_slug), workTitle: str(r.work_title), workTitleBn: str(r.work_title_bn), sortOrder: Number(r.sort_order), active: Boolean(r.active),
-    createdAt: String(r.created_at ?? r.updated_at ?? ""), source: safe(r.source) as "admin" | "user", isPublic: true,
-  }));
+  const [reviews, userReviews, works] = await Promise.all([readTable("reviews"), readTable("user_reviews"), readTable("work_items")]);
+  const work = works.find((w) => num(w.id) === workId);
+  if (!work) return [];
+  const adminRows = reviews.filter((r) => bool(r.active) && num(r.work_id) === workId).map((r) => mapReview(r, work, "admin"));
+  const publicUserRows = userReviews.filter((r) => r.status === "visible" && num(r.work_id) === workId).map((r) => mapReview(r, work, "user"));
+  return [...adminRows, ...publicUserRows].sort((a, b) => (a.source === b.source ? b.createdAt.localeCompare(a.createdAt) || b.id - a.id : a.source === "admin" ? -1 : 1));
 }
 
 export async function getServiceBySlug(slug: string): Promise<ServiceRow | null> {
-  const row = await queryOne<Record<string, unknown>>(
-    "SELECT * FROM services WHERE (slug = $1 OR id = $1) AND active = true LIMIT 1",
-    [slug],
-  );
-  if (!row) return null;
-  return {
-    id: String(row.id), slug: safe(row.slug) || String(row.id), name: safe(row.name), nameBn: str(row.name_bn),
-    category: safe(row.category), categoryBn: str(row.category_bn), description: safe(row.description), descriptionBn: str(row.description_bn),
-    bestFor: safe(row.best_for), bestForBn: str(row.best_for_bn), accent: safe(row.accent), imageUrl: str(row.image_url),
-    sortOrder: Number(row.sort_order), active: Boolean(row.active),
-  };
+  const row = (await readTable("services")).find((r) => (r.slug === slug || String(r.id) === slug) && bool(r.active));
+  return row ? mapService(row) : null;
 }
 
 export async function getReviewBySlug(slug: string): Promise<ReviewRow | null> {
-  const row = await queryOne<Record<string, unknown>>(
-    `SELECT r.*, w.slug AS work_slug, w.title AS work_title, w.title_bn AS work_title_bn
-     FROM reviews r
-     LEFT JOIN work_items w ON w.id = r.work_id
-     WHERE (r.slug = $1 OR (r.slug IS NULL AND 'review-' || r.id = $1)) AND r.active = true
-     LIMIT 1`,
-    [slug],
-  );
+  const [reviews, works] = await Promise.all([readTable("reviews"), readTable("work_items")]);
+  const row = reviews.find((r) => (r.slug === slug || (r.slug == null && `review-${r.id}` === slug)) && bool(r.active));
   if (!row) return null;
-  return {
-    id: Number(row.id), slug: safe(row.slug) || `review-${Number(row.id)}`, name: safe(row.name), role: str(row.role), roleBn: str(row.role_bn),
-    textEn: safe(row.text_en), textBn: str(row.text_bn), rating: row.rating == null ? null : Number(row.rating),
-    workId: row.work_id == null ? null : Number(row.work_id), workSlug: str(row.work_slug), workTitle: str(row.work_title), workTitleBn: str(row.work_title_bn),
-    sortOrder: Number(row.sort_order), active: Boolean(row.active), createdAt: String(row.created_at ?? row.updated_at ?? ""),
-  };
+  const work = row.work_id == null ? null : works.find((w) => num(w.id) === num(row.work_id));
+  return mapReview(row, work, "admin");
 }
 
 export async function getHeroImages(): Promise<HeroImageRow[]> {
-  const rows = await publicRows<Record<string, unknown>>(
-    "hero_images",
-    { order: "sort_order.asc", select: "*" },
-    "SELECT * FROM hero_images ORDER BY sort_order ASC",
-  );
-  return rows.map((r) => ({
-    slot: String(r.slot),
-    label: safe(r.label),
-    imageUrl: str(r.image_url),
-    sortOrder: Number(r.sort_order),
-  }));
+  return (await readTable("hero_images")).sort((a, b) => num(a.sort_order) - num(b.sort_order)).map((r) => ({ slot: safe(r.slot), label: safe(r.label), imageUrl: str(r.image_url), sortOrder: num(r.sort_order) }));
 }
 
 import type { BusinessPublicSummary } from "@/app/types/public-cms";
 
 export async function getBusinessPublicSummary(): Promise<BusinessPublicSummary | null> {
-  const row = await publicRow<Record<string, unknown>>(
-    "business_profile",
-    { id: "eq.1", limit: 1, select: "name,short_name,tagline,team_slug,work_slug" },
-    "SELECT name, short_name, tagline, team_slug, work_slug FROM business_profile WHERE id = 1",
-  );
+  const [businessRows, team, work] = await Promise.all([readTable("business_profile"), readTable("team_members"), readTable("work_items")]);
+  const row = businessRows.find((item) => num(item.id) === 1) ?? businessRows[0];
   if (!row) return null;
-
-  const [teamRows, workRows] = await Promise.all([
-    publicRows<Record<string, unknown>>(
-      "team_members",
-      { active: "is.true", select: "id", limit: 1 },
-      "SELECT id FROM team_members WHERE active = true LIMIT 1",
-    ),
-    publicRows<Record<string, unknown>>(
-      "work_items",
-      { active: "is.true", select: "id", limit: 1 },
-      "SELECT id FROM work_items WHERE active = true LIMIT 1",
-    ),
-  ]);
-
-  return {
-    name: safe(row.name),
-    shortName: safe(row.short_name),
-    tagline: safe(row.tagline),
-    teamSlug: safe(row.team_slug) || "our-team",
-    workSlug: safe(row.work_slug) || "our-work",
-    hasTeam: teamRows.length > 0,
-    hasWork: workRows.length > 0,
-  };
+  return { name: safe(row.name), shortName: safe(row.short_name), tagline: safe(row.tagline), teamSlug: safe(row.team_slug) || "our-team", workSlug: safe(row.work_slug) || "our-work", hasTeam: team.some((item) => bool(item.active)), hasWork: work.some((item) => bool(item.active)) };
 }
 
 export async function getPrimaryHeroImage(): Promise<HeroImageRow | null> {
-  const rows = await publicRows<Record<string, unknown>>(
-    "hero_images",
-    { image_url: "not.is.null", order: "sort_order.asc", select: "slot,label,image_url,sort_order" },
-    "SELECT slot, label, image_url, sort_order FROM hero_images WHERE image_url IS NOT NULL AND image_url <> '' ORDER BY CASE WHEN slot = 'banner' THEN 1 ELSE 0 END, sort_order ASC",
-  );
-  const row = rows.filter((item) => String(item.image_url ?? "").trim())[0] ?? null;
-  if (!row) return null;
-  return {
-    slot: String(row.slot),
-    label: safe(row.label),
-    imageUrl: str(row.image_url),
-    sortOrder: Number(row.sort_order),
-  };
+  const rows = (await readTable("hero_images")).filter((item) => Boolean(str(item.image_url))).sort((a, b) => (a.slot === "banner" ? -1 : b.slot === "banner" ? 1 : num(a.sort_order) - num(b.sort_order)));
+  const row = rows[0];
+  return row ? { slot: safe(row.slot), label: safe(row.label), imageUrl: str(row.image_url), sortOrder: num(row.sort_order) } : null;
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServiceBySlug } from "@/lib/content";
+import { getPublicServiceData } from "@/app/server/api/public/services";
 
 export async function GET(
   _request: Request,
@@ -8,10 +8,10 @@ export async function GET(
   const { slug } = await context.params;
 
   try {
-    const service = await getServiceBySlug(slug);
-    if (!service) return NextResponse.json({ error: "Service not found." }, { status: 404 });
+    const data = await getPublicServiceData(slug);
+    if (!data.service) return NextResponse.json({ error: "Service not found." }, { status: 404 });
     return NextResponse.json(
-      { service },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

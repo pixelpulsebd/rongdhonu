@@ -1,0 +1,66 @@
+{
+  "formatVersion": 2,
+  "table": "site_visit_events",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "visitor_id",
+        "type": "string",
+        "nullable": false,
+        "foreignKey": "site_visitors.visitor_id"
+      },
+      {
+        "name": "session_id",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "visited_at",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "page_title",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "referrer",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "event_name",
+        "type": "string",
+        "nullable": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "columns": [
+          "visitor_id"
+        ],
+        "referencesTable": "site_visitors",
+        "referencesColumns": [
+          "visitor_id"
+        ]
+      }
+    ]
+  },
+  "rows": [],
+  "nextId": 1,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

@@ -1,16 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getActiveReviews, getActiveServices, getActiveTeam, getActiveWork, getBusinessProfile } from "@/lib/content";
+import { getPublicContentData } from "@server/api/public/content";
 
 const SITE_URL = "https://www.rongdhonubd.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [business, services, reviews, team, work] = await Promise.all([
-    getBusinessProfile(),
-    getActiveServices(),
-    getActiveReviews(),
-    getActiveTeam(),
-    getActiveWork(),
-  ]);
+  const { business, services, reviews, team, work } = await getPublicContentData();
 
   const entries: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "weekly", priority: 1 },

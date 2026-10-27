@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getActiveServices, getBusinessProfile } from "@/lib/content";
+import type { BusinessProfile, ServiceRow } from "@/lib/content";
+import { getPublicBusinessData } from "@server/api/public/business";
+import { getPublicServicesData } from "@server/api/public/services";
 
 type ChatHistoryItem = { role?: "user" | "bot"; content?: string };
 type Source = { title: string; url: string };
@@ -7,7 +9,7 @@ type Source = { title: string; url: string };
 const normalize = (value: string) =>
   value.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
 
-function buildWebsiteKnowledge(business: Awaited<ReturnType<typeof getBusinessProfile>>, services: Awaited<ReturnType<typeof getActiveServices>>) {
+function buildWebsiteKnowledge(business: BusinessProfile | null, services: ServiceRow[]) {
   const serviceNames = services.map((service) => service.name).filter(Boolean);
   const serviceNamesBn = services.map((service) => service.nameBn || service.name).filter(Boolean);
   return [
@@ -166,11 +168,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: language === "bn" ? "বার্তা প্রয়োজন।" : "Message is required." }, { status: 400 });
     }
 
-    const [business, services] = await Promise.all([
-      getBusinessProfile().catch(() => null),
-      getActiveServices().catch(() => []),
+    const [businessResult, servicesResult] = await Promise.all([
+      getPublicBusinessData().catch(() => ({ business: null })),
+      getPublicServicesData().catch(() => ({ services: [] })),
     ]);
-    const websiteAnswer = getWebsiteAnswer(message, language, buildWebsiteKnowledge(business, services));
+    const websiteAnswer = getWebsiteAnswer(message, language, buildWebsiteKnowledge(businessResult.business, servicesResult.services));
     if (websiteAnswer) {
       return NextResponse.json({
         answer: websiteAnswer,

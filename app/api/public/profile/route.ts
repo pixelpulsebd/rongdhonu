@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { clearPublicProfileCookie, getPublicProfile } from "@/lib/publicProfile";
+import { clearPublicProfileCookie } from "@/lib/publicProfile";
+import { getPublicProfileData } from "@server/api/public/profile";
 import { isSameOriginRequest } from "@/lib/publicRequest";
 
 export async function GET() {
-  const profile = await getPublicProfile();
-  const publicProfile = profile ? { name: profile.name, email: profile.email, phone: profile.phone, provider: profile.provider } : null;
-  return NextResponse.json({ profile: publicProfile }, { headers: { "Cache-Control": "private, no-store" } });
+  const data = await getPublicProfileData();
+  return NextResponse.json(data, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function DELETE(request: Request) {

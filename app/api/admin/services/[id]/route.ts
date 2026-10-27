@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/apiGuard";
-import { query, queryOne } from "@/lib/db";
+import { mutateTable, timestamp } from "@/lib/drive-store";
 import { parseServiceInput, parseServiceSortOrder } from "@/lib/serviceInput";
 
 export const PUT = withAdmin(async (request: Request, context: { params: Promise<{ id: string }> }) => {
@@ -9,23 +9,19 @@ export const PUT = withAdmin(async (request: Request, context: { params: Promise
   const parsed = parseServiceInput(body);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
   const s = parsed.value;
-  const duplicate = await queryOne("SELECT id FROM services WHERE slug = $1 AND id <> $2", [s.slug, id]);
-  if (duplicate) return NextResponse.json({ error: "That service slug is already in use." }, { status: 409 });
-
-  const active = body.active !== false;
-  const sortOrder = parseServiceSortOrder(body.sortOrder);
-  const result = await query(
-    `UPDATE services SET slug=$1, name=$2, name_bn=$3, category=$4, category_bn=$5, description=$6, description_bn=$7,
-      best_for=$8, best_for_bn=$9, accent=$10, image_url=$11, active=$12, sort_order=$13, updated_at=now()
-     WHERE id=$14 RETURNING id`,
-    [s.slug, s.name, s.name_bn, s.category, s.category_bn, s.description, s.description_bn, s.best_for, s.best_for_bn, s.accent, s.image_url, active, sortOrder, id],
-  );
-  if (!result.length) return NextResponse.json({ error: "Service not found." }, { status: 404 });
+  const result = await mutateTable("services", (document) => {
+    if (document.rows.some((row) => String(row.slug ?? "") === s.slug && String(row.id) !== id)) return "duplicate" as const;
+    const row = document.rows.find((item) => String(item.id) === id);
+    if (!row) return "missing" as const;
+    Object.assign(row, { slug: s.slug, name: s.name, name_bn: s.name_bn, category: s.category, category_bn: s.category_bn, description: s.description, description_bn: s.description_bn, best_for: s.best_for, best_for_bn: s.best_for_bn, accent: s.accent, image_url: s.image_url, active: body.active !== false, sort_order: parseServiceSortOrder(body.sortOrder), updated_at: timestamp() });
+    return "ok" as const;
+  });
+  if (result === "duplicate") return NextResponse.json({ error: "That service slug is already in use." }, { status: 409 });
+  if (result === "missing") return NextResponse.json({ error: "Service not found." }, { status: 404 });
   return NextResponse.json({ ok: true });
 });
-
 export const DELETE = withAdmin(async (_request: Request, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params;
-  await query("DELETE FROM services WHERE id = $1", [id]);
+  await mutateTable("services", (document) => { document.rows = document.rows.filter((row) => String(row.id) !== id); });
   return NextResponse.json({ ok: true });
 });

@@ -6,13 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "db:migrate": "node --env-file=.env scripts/migrate.mjs",
-    "db:repair-user-reviews": "node --env-file=.env scripts/repair-user-reviews.mjs",
-    "db:seed": "node --env-file=.env scripts/seed.mjs"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "drive:check": "node --env-file=.env scripts/check-drive-files.mjs"
   },
   "dependencies": {
-    "@neondatabase/neon-js": "^0.7.0-beta",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "framer-motion": "^14.0.0",
@@ -23,7 +21,6 @@
     "next": "^16.3.8",
     "next-themes": "^0.4.6",
     "nodemailer": "^10.0.13",
-    "pg": "^8.23.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-hot-toast": "^2.6.1",
@@ -37,7 +34,6 @@
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
     "@types/nodemailer": "^8.0.2",
-    "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/vcf": "^2.0.7",
@@ -52,5 +48,9 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "allowScripts": {
+    "core-js@3.50.0": true,
+    "unrs-resolver@1.12.2": true
   }
 }

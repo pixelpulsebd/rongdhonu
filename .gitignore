@@ -86,3 +86,8 @@ temp/
 # Environment backup files
 .env.*
 !.env.example
+# Private Google Cloud credentials
+credentials/google-service-account.json
+
+# Local Google Cloud credentials
+/credentials/

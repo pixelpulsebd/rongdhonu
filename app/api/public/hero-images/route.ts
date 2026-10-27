@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getHeroImages } from "@/lib/content";
+import { getPublicHeroImagesData } from "@/app/server/api/public/hero-images";
 
 export async function GET() {
   try {
-    const heroImages = await getHeroImages();
+    const data = await getPublicHeroImagesData();
     return NextResponse.json(
-      { heroImages },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

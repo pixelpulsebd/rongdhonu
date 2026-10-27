@@ -1,0 +1,886 @@
+{
+  "formatVersion": 2,
+  "description": "Project-aligned Google Drive JSON table documents for Rong Dhonu. The application runtime reads rows and the document envelope; schema is descriptive metadata.",
+  "filePrefix": "rongdhonu-db-",
+  "tables": {
+    "admin_users": {
+      "file": "rongdhonu-db-admin_users.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "description": "Unique admin ID"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "password_hash",
+          "type": "string",
+          "nullable": false,
+          "description": "bcrypt password hash; never plaintext"
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false,
+          "description": "Created timestamp; admin login only reads id, email and password_hash."
+        }
+      ]
+    },
+    "business_profile": {
+      "file": "rongdhonu-db-business_profile.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "short_name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "tagline",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "website",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "address_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "map_query",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "logo_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "logo_reversed_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "icon_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "team_slug",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "work_slug",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        }
+      ]
+    },
+    "services": {
+      "file": "rongdhonu-db-services.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "nullable": false,
+          "description": "Stable string ID; the admin API currently sets this equal to the service slug."
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "best_for",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "best_for_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "accent",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "image_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "slug"
+        ]
+      ]
+    },
+    "team_members": {
+      "file": "rongdhonu-db-team_members.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "name_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "role_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "bio",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "bio_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "photo_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "slug"
+        ]
+      ]
+    },
+    "work_items": {
+      "file": "rongdhonu-db-work_items.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "title_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "category_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "description_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "client_name",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "year",
+          "type": "integer",
+          "nullable": true,
+          "description": "Four-digit project year, or null when not supplied."
+        },
+        {
+          "name": "image_url",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": true
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "slug"
+        ]
+      ]
+    },
+    "reviews": {
+      "file": "rongdhonu-db-reviews.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "role_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "text_en",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "text_bn",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "rating",
+          "type": "number",
+          "nullable": true,
+          "description": "Rating on a 0–5 scale"
+        },
+        {
+          "name": "work_id",
+          "type": "integer",
+          "nullable": true,
+          "foreignKey": "work_items.id"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": true
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "uniqueConstraints": [
+        [
+          "slug"
+        ]
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "work_id"
+          ],
+          "referencesTable": "work_items",
+          "referencesColumns": [
+            "id"
+          ],
+          "nullable": true
+        }
+      ]
+    },
+    "hero_images": {
+      "file": "rongdhonu-db-hero_images.json",
+      "primaryKey": [
+        "slot"
+      ],
+      "columns": [
+        {
+          "name": "slot",
+          "type": "string",
+          "nullable": false,
+          "unique": true
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "image_url",
+          "type": "string",
+          "nullable": true,
+          "description": "May be a supported image data URI or URL"
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        }
+      ]
+    },
+    "contact_submissions": {
+      "file": "rongdhonu-db-contact_submissions.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "service_interest",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "nullable": false,
+          "enum": [
+            "new",
+            "read",
+            "archived"
+          ]
+        },
+        {
+          "name": "consent_version",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "consent_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": true
+        }
+      ]
+    },
+    "user_reviews": {
+      "file": "rongdhonu-db-user_reviews.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "work_id",
+          "type": "integer",
+          "nullable": false,
+          "foreignKey": "work_items.id"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "rating",
+          "type": "integer",
+          "nullable": false,
+          "minimum": 1,
+          "maximum": 5
+        },
+        {
+          "name": "review_text",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "owner_token_hash",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "nullable": false,
+          "enum": [
+            "pending",
+            "visible",
+            "hidden"
+          ]
+        },
+        {
+          "name": "identity_provider",
+          "type": "string",
+          "nullable": true,
+          "enum": [
+            "google",
+            "apple"
+          ]
+        },
+        {
+          "name": "identity_subject",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "consent_version",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "consent_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "work_id"
+          ],
+          "referencesTable": "work_items",
+          "referencesColumns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    "site_visitors": {
+      "file": "rongdhonu-db-site_visitors.json",
+      "primaryKey": [
+        "visitor_id"
+      ],
+      "columns": [
+        {
+          "name": "visitor_id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "first_seen_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "last_seen_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "visit_count",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "session_count",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "landing_path",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "ip_hash",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "ip_masked",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "user_agent",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "browser",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "operating_system",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "device_type",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "language",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "languages",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "timezone",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "screen_width",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "screen_height",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "viewport_width",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "viewport_height",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "cookies_enabled",
+          "type": "boolean",
+          "nullable": true
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "referrer",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "last_path",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    },
+    "site_visit_events": {
+      "file": "rongdhonu-db-site_visit_events.json",
+      "primaryKey": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "visitor_id",
+          "type": "string",
+          "nullable": false,
+          "foreignKey": "site_visitors.visitor_id"
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "visited_at",
+          "type": "datetime",
+          "nullable": false
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "page_title",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "referrer",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "event_name",
+          "type": "string",
+          "nullable": false
+        }
+      ],
+      "foreignKeys": [
+        {
+          "columns": [
+            "visitor_id"
+          ],
+          "referencesTable": "site_visitors",
+          "referencesColumns": [
+            "visitor_id"
+          ]
+        }
+      ]
+    }
+  }
+}

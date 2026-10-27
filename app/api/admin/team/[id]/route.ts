@@ -1,28 +1,26 @@
 import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/apiGuard";
-import { query, queryOne } from "@/lib/db";
+import { mutateTable, timestamp } from "@/lib/drive-store";
 import { parseTeamInput, parseTeamSortOrder } from "@/lib/teamInput";
-
 export const PUT = withAdmin(async (request: Request, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params;
   const body = await request.json();
   const parsed = parseTeamInput(body);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
   const m = parsed.value;
-  const duplicate = await queryOne("SELECT id FROM team_members WHERE slug = $1 AND id <> $2", [m.slug, id]);
-  if (duplicate) return NextResponse.json({ error: "That team slug is already in use." }, { status: 409 });
-  const active = body.active !== false;
-  const sortOrder = parseTeamSortOrder(body.sortOrder);
-  const result = await query(
-    `UPDATE team_members SET slug = $1, name = $2, name_bn = $3, role = $4, role_bn = $5, bio = $6, bio_bn = $7, photo_url = $8, active = $9, sort_order = $10, updated_at = now() WHERE id = $11 RETURNING id`,
-    [m.slug, m.name, m.name_bn, m.role, m.role_bn, m.bio, m.bio_bn, m.photo_url, active, sortOrder, id]
-  );
-  if (result.length === 0) return NextResponse.json({ error: "Team member not found." }, { status: 404 });
+  const result = await mutateTable("team_members", (document) => {
+    if (document.rows.some((row) => row.slug === m.slug && String(row.id) !== id)) return "duplicate" as const;
+    const row = document.rows.find((item) => String(item.id) === id);
+    if (!row) return "missing" as const;
+    Object.assign(row, { slug: m.slug, name: m.name, name_bn: m.name_bn, role: m.role, role_bn: m.role_bn, bio: m.bio, bio_bn: m.bio_bn, photo_url: m.photo_url, active: body.active !== false, sort_order: parseTeamSortOrder(body.sortOrder), updated_at: timestamp() });
+    return "ok" as const;
+  });
+  if (result === "duplicate") return NextResponse.json({ error: "That team slug is already in use." }, { status: 409 });
+  if (result === "missing") return NextResponse.json({ error: "Team member not found." }, { status: 404 });
   return NextResponse.json({ ok: true });
 });
-
 export const DELETE = withAdmin(async (_request: Request, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params;
-  await query("DELETE FROM team_members WHERE id = $1", [id]);
+  await mutateTable("team_members", (document) => { document.rows = document.rows.filter((row) => String(row.id) !== id); });
   return NextResponse.json({ ok: true });
 });

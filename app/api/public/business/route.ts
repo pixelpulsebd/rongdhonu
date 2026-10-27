@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getBusinessProfile } from "@/lib/content";
+import { getPublicBusinessData } from "@/app/server/api/public/business";
 
 export async function GET() {
   try {
-    const business = await getBusinessProfile();
+    const data = await getPublicBusinessData();
     return NextResponse.json(
-      { business },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

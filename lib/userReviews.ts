@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { queryOne } from "./db";
+import { readTable } from "@/lib/drive-store";
 
 const COOKIE_PREFIX = "rd_review_owner_";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
@@ -37,9 +37,7 @@ export async function clearOwnerCookie(reviewId: number): Promise<void> {
 export async function hasOwnerAccess(reviewId: number, storedHash?: string | null): Promise<boolean> {
   const store = await cookies();
   const token = store.get(ownerCookieName(reviewId))?.value;
-  const hash = storedHash ?? (await queryOne<{ owner_token_hash: string }>(
-    "SELECT owner_token_hash FROM user_reviews WHERE id = $1",
-    [reviewId],
-  ))?.owner_token_hash;
+  const row = storedHash ? null : (await readTable("user_reviews")).find((item) => Number(item.id) === reviewId);
+  const hash = storedHash ?? (row?.owner_token_hash == null ? null : String(row.owner_token_hash));
   return Boolean(token && hash && hashOwnerToken(token) === hash);
 }

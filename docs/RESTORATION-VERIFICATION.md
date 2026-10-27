@@ -1,33 +1,21 @@
 # Rong Dhonu — source restoration verification
 
-This package was reconciled from the original `rongdhonu-baseline(1).zip` and the latest optimized source.
+This package retains the supplied website design and its CMS, with server-side API handlers connected to the Google Drive JSON store.
 
 ## Source preservation
 
-- All original project source/config files from the original upload are present.
-- Original macOS `.DS_Store` metadata is intentionally excluded from the distribution archive.
-- `tsconfig.tsbuildinfo` is retained.
-- Performance additions are layered on top instead of replacing the original project tree.
+- Public-site, CMS, and API source are included in the project archive.
+- macOS `.DS_Store` metadata is intentionally excluded from the distribution archive.
+- Performance improvements are layered on top of the retained project tree.
 
-## Specific destructive replacements restored
+## Features retained
 
-- `app/admin/(dashboard)/page.tsx` — restored full dashboard implementation (8,490 bytes).
-- `app/components/RongDhonuRenovationPage.tsx` — restored full legacy wrapper (1,192 bytes).
-- `app/components/useCmsContent.ts` — restored complete CMS type/context compatibility surface, while making its request post-mount so it cannot block first render.
-- `app/components/BannerSection.tsx` — restored CMS-aware banner behavior using the section-scoped public hero API.
-- `ServicesSection`, `TeamSection`, and `WorkSection` — restored their richer original UI and adapted them to viewport-scoped APIs with component skeletons.
+- Individual landing-section lazy loading and viewport-scoped data loading.
+- Admin route loading skeletons.
+- Google Drive-backed content, admin records, enquiries, public reviews, and visitor analytics.
+- Contact validation, consent handling, same-origin checks, and optional SMTP notifications.
+- Public API routes for business, hero images, process, reviews, services, team, and work.
 
-## Performance additions retained
+## Verification expectations
 
-- Individual section lazy JS/data loading.
-- Admin route skeleton loading.
-- Neon/Postgres connection improvements.
-- Contact validation and rate-limit migration.
-- Apple touch icon files.
-- Public API routes for business, hero images, process, reviews, services, team and work.
-
-## Mechanical checks
-
-- 100 original non-metadata source/config files checked against the reconciled project: 0 missing.
-- All TypeScript/TSX source files (excluding `next-env.d.ts`) transpiled with TypeScript 5.8.3: 0 syntax failures.
-- Archive integrity verified with `unzip -t`.
+Before deployment, run `npm run typecheck`, `npm run lint`, and `npm run build`. Also run `npm run drive:check` with the deployment's configured Google Drive credentials. Static source checks alone cannot validate live Drive access or mail delivery.

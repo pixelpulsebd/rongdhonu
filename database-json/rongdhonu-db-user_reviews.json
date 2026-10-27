@@ -1,0 +1,107 @@
+{
+  "formatVersion": 2,
+  "table": "user_reviews",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "work_id",
+        "type": "integer",
+        "nullable": false,
+        "foreignKey": "work_items.id"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "rating",
+        "type": "integer",
+        "nullable": false,
+        "minimum": 1,
+        "maximum": 5
+      },
+      {
+        "name": "review_text",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "owner_token_hash",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "nullable": false,
+        "enum": [
+          "pending",
+          "visible",
+          "hidden"
+        ]
+      },
+      {
+        "name": "identity_provider",
+        "type": "string",
+        "nullable": true,
+        "enum": [
+          "google",
+          "apple"
+        ]
+      },
+      {
+        "name": "identity_subject",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "consent_version",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "consent_at",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": false
+      }
+    ],
+    "foreignKeys": [
+      {
+        "columns": [
+          "work_id"
+        ],
+        "referencesTable": "work_items",
+        "referencesColumns": [
+          "id"
+        ]
+      }
+    ]
+  },
+  "rows": [],
+  "nextId": 1,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

@@ -48,4 +48,4 @@ When OAuth is used, the current public-form draft is temporarily stored in `sess
 
 ## Review identity rule
 
-A user review is limited to one review per selected work by normalized email. When a verified Google or Apple profile is present, the stable provider subject is also stored with the review and a partial unique index prevents a second review for the same work and provider account, even if the user edits the email field.
+The API checks the Google Drive review records to prevent more than one review per selected work by normalized email. When a verified Google or Apple profile is present, the provider subject is also stored and checked. These are application-level checks; the file store does not provide relational unique constraints, and concurrent requests across separate app processes can race.

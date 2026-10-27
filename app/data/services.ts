@@ -1,7 +1,7 @@
 import type { Service } from "@/app/types/rong-dhonu";
 
 /**
- * Empty fallback only. Live service data comes from the CMS database.
+ * Empty fallback only. Live service data comes from the CMS content store.
  * Keeping the array typed preserves the existing imports without shipping fallback records.
  */
 export const SERVICES: Service[] = [];

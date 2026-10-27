@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { appleConfigured, googleConfigured } from "@/lib/publicOAuth";
+import { getPublicAuthProvidersData } from "@server/api/public/auth/providers";
 
 export async function GET() {
-  return NextResponse.json({ google: googleConfigured(), apple: appleConfigured() }, { headers: { "Cache-Control": "public, max-age=60" } });
+  return getPublicAuthProvidersData().then((data) => NextResponse.json(data, { headers: { "Cache-Control": "public, max-age=60" } }));
 }

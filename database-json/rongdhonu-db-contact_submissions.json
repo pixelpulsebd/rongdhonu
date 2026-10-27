@@ -1,0 +1,74 @@
+{
+  "formatVersion": 2,
+  "table": "contact_submissions",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "phone",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "service_interest",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "nullable": false,
+        "enum": [
+          "new",
+          "read",
+          "archived"
+        ]
+      },
+      {
+        "name": "consent_version",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "consent_at",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": true
+      }
+    ]
+  },
+  "rows": [],
+  "nextId": 1,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

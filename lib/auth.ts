@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { queryOne } from "./db";
+import { readTable } from "@/lib/drive-store";
 
 const COOKIE_NAME = "rd_admin_session";
 const MAX_AGE_SECONDS = 60 * 60 * 12; // 12 hours
@@ -60,9 +60,8 @@ function decodeSession(token: string): SessionPayload | null {
 }
 
 export async function verifyAdminLogin(email: string, password: string): Promise<AdminUserRow | null> {
-  const user = await queryOne<AdminUserRow>("SELECT id, email, password_hash FROM admin_users WHERE email = $1", [
-    email.trim().toLowerCase(),
-  ]);
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = (await readTable<AdminUserRow & Record<string, unknown>>("admin_users")).find((row) => row.email.trim().toLowerCase() === normalizedEmail) ?? null;
   if (!user) return null;
   const ok = await bcrypt.compare(password, user.password_hash);
   return ok ? user : null;

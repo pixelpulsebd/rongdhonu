@@ -1,0 +1,38 @@
+{
+  "formatVersion": 2,
+  "table": "admin_users",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "nullable": false,
+        "description": "Unique admin ID"
+      },
+      {
+        "name": "email",
+        "type": "string",
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "name": "password_hash",
+        "type": "string",
+        "nullable": false,
+        "description": "bcrypt password hash; never plaintext"
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": false,
+        "description": "Created timestamp; admin login only reads id, email and password_hash."
+      }
+    ]
+  },
+  "rows": [],
+  "nextId": 1,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

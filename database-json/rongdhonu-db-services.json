@@ -1,0 +1,199 @@
+{
+  "formatVersion": 2,
+  "table": "services",
+  "schema": {
+    "primaryKey": [
+      "id"
+    ],
+    "columns": [
+      {
+        "name": "id",
+        "type": "string",
+        "nullable": false,
+        "description": "Stable string ID; the admin API currently sets this equal to the service slug."
+      },
+      {
+        "name": "slug",
+        "type": "string",
+        "nullable": false,
+        "unique": true
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "name_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "category_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "description_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "best_for",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "best_for_bn",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "accent",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "image_url",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "sort_order",
+        "type": "integer",
+        "nullable": false
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "nullable": false
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": false
+      }
+    ],
+    "uniqueConstraints": [
+      [
+        "slug"
+      ]
+    ]
+  },
+  "rows": [
+    {
+      "id": "general-painting",
+      "slug": "general-painting",
+      "name": "General Painting Work",
+      "name_bn": "সাধারণ পেইন্টিং কাজ",
+      "category": "Painting",
+      "category_bn": "পেইন্টিং",
+      "description": "Professional painting work for residential, commercial and renovation projects.",
+      "description_bn": "আবাসিক, বাণিজ্যিক ও রেনোভেশন প্রজেক্টের জন্য পেশাদার পেইন্টিং।",
+      "best_for": "Complete spaces and property refresh",
+      "best_for_bn": "সম্পূর্ণ স্পেস ও প্রপার্টি রিফ্রেশ",
+      "accent": "red",
+      "image_url": null,
+      "sort_order": 1,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": "wall-paint-color",
+      "slug": "wall-paint-color",
+      "name": "Various Wall Paint & Color Schemes",
+      "name_bn": "বিভিন্ন দেয়াল রং ও কালার স্কিম",
+      "category": "Color & Design",
+      "category_bn": "রং ও ডিজাইন",
+      "description": "Wall paint application and coordinated color schemes designed around the character of your space.",
+      "description_bn": "স্পেসের বৈশিষ্ট্য অনুযায়ী দেয়ালের রং ও সমন্বিত কালার স্কিম।",
+      "best_for": "Homes, offices and feature spaces",
+      "best_for_bn": "বাড়ি, অফিস ও ফিচার স্পেস",
+      "accent": "orange",
+      "image_url": null,
+      "sort_order": 2,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": "skim-coat",
+      "slug": "skim-coat",
+      "name": "Skim Coat Work",
+      "name_bn": "স্কিম কোট কাজ",
+      "category": "Surface Preparation",
+      "category_bn": "সারফেস প্রস্তুতি",
+      "description": "Smooth surface preparation using skim coat work before the final decorative finish.",
+      "description_bn": "চূড়ান্ত ডেকোরেটিভ ফিনিশের আগে মসৃণ সারফেস প্রস্তুতি।",
+      "best_for": "Uneven or imperfect wall surfaces",
+      "best_for_bn": "অসমান বা ত্রুটিপূর্ণ দেয়াল",
+      "accent": "amber",
+      "image_url": null,
+      "sort_order": 3,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": "marble-painting",
+      "slug": "marble-painting",
+      "name": "Marble Painting",
+      "name_bn": "মার্বেল পেইন্টিং",
+      "category": "Decorative Finish",
+      "category_bn": "ডেকোরেটিভ ফিনিশ",
+      "description": "Decorative marble-effect painting for spaces that need a distinctive premium finish.",
+      "description_bn": "স্বতন্ত্র প্রিমিয়াম ফিনিশের জন্য ডেকোরেটিভ মার্বেল-ইফেক্ট পেইন্টিং।",
+      "best_for": "Feature walls and statement interiors",
+      "best_for_bn": "ফিচার ওয়াল ও স্টেটমেন্ট ইন্টেরিয়র",
+      "accent": "green",
+      "image_url": null,
+      "sort_order": 4,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": "ambrose-painting",
+      "slug": "ambrose-painting",
+      "name": "Ambrose Painting",
+      "name_bn": "অ্যামব্রোস পেইন্টিং",
+      "category": "Decorative Finish",
+      "category_bn": "ডেকোরেটিভ ফিনিশ",
+      "description": "Ambrose painting work for decorative surfaces and customized interior treatments.",
+      "description_bn": "ডেকোরেটিভ সারফেস ও কাস্টমাইজড ইন্টেরিয়র ট্রিটমেন্টের জন্য অ্যামব্রোস পেইন্টিং।",
+      "best_for": "Decorative and premium surfaces",
+      "best_for_bn": "ডেকোরেটিভ ও প্রিমিয়াম সারফেস",
+      "accent": "teal",
+      "image_url": null,
+      "sort_order": 5,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    },
+    {
+      "id": "texture-work",
+      "slug": "texture-work",
+      "name": "Texture Work",
+      "name_bn": "টেক্সচার কাজ",
+      "category": "Texture & Feature Walls",
+      "category_bn": "টেক্সচার ও ফিচার ওয়াল",
+      "description": "Texture finishes that add depth, character and visual interest to walls and selected surfaces.",
+      "description_bn": "দেয়াল ও নির্বাচিত সারফেসে গভীরতা ও ভিজ্যুয়াল বৈচিত্র্য যোগ করার টেক্সচার ফিনিশ।",
+      "best_for": "Feature walls and accent areas",
+      "best_for_bn": "ফিচার ওয়াল ও অ্যাকসেন্ট এরিয়া",
+      "accent": "blue",
+      "image_url": null,
+      "sort_order": 6,
+      "active": true,
+      "updated_at": "2026-10-27T00:00:00+00:00"
+    }
+  ],
+  "nextId": 1,
+  "updatedAt": "2026-10-27T00:00:00.000Z"
+}

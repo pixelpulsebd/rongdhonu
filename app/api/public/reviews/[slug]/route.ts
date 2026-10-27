@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getReviewBySlug } from "@/lib/content";
+import { getPublicReviewData } from "@/app/server/api/public/reviews";
 
 export async function GET(
   _request: Request,
@@ -8,10 +8,10 @@ export async function GET(
   const { slug } = await context.params;
 
   try {
-    const review = await getReviewBySlug(slug);
-    if (!review) return NextResponse.json({ error: "Review not found." }, { status: 404 });
+    const data = await getPublicReviewData(slug);
+    if (!data.review) return NextResponse.json({ error: "Review not found." }, { status: 404 });
     return NextResponse.json(
-      { review },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

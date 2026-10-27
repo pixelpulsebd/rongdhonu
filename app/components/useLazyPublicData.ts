@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getApiJson } from "@/app/client/api/http";
 
 interface LazyPublicDataOptions {
   /** How far before the section enters the viewport that loading should begin. */
@@ -41,11 +42,9 @@ export function useLazyPublicData<T>(
     setError(null);
 
     try {
-      const response = await fetch(url);
-      const payload = (await response.json().catch(() => null)) as (T & { error?: string }) | null;
-      if (!response.ok) throw new Error(payload && typeof payload.error === "string" ? payload.error : `Request failed (${response.status}).`);
+      const payload = await getApiJson<T>(url);
       if (requestId !== generation.current) return;
-      setData(payload as T);
+      setData(payload);
     } catch (cause) {
       if (requestId !== generation.current) return;
       setError(cause instanceof Error ? cause.message : "Could not load this section.");

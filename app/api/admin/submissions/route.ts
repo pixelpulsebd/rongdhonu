@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/apiGuard";
-import { query } from "@/lib/db";
-
+import { readTable } from "@/lib/drive-store";
 export const GET = withAdmin(async () => {
-  const rows = await query("SELECT * FROM contact_submissions ORDER BY created_at DESC LIMIT 500");
-  return NextResponse.json({ submissions: rows });
+  const rows = await readTable("contact_submissions");
+  rows.sort((a, b) => new Date(String(b.created_at ?? 0)).getTime() - new Date(String(a.created_at ?? 0)).getTime());
+  return NextResponse.json({ submissions: rows.slice(0, 500) });
 });

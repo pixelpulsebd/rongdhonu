@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getHeroImages } from "@/lib/content";
+import { getPublicProcessData } from "@/app/server/api/public/process";
 
 export async function GET() {
   try {
-    const process = (await getHeroImages()).filter((item) => item.slot !== "banner" && item.imageUrl);
+    const data = await getPublicProcessData();
     return NextResponse.json(
-      { process },
+      data,
       { headers: { "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300" } },
     );
   } catch (error) {

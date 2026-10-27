@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/apiGuard";
-import { query, queryOne } from "@/lib/db";
+import { mutateTable, timestamp } from "@/lib/drive-store";
 import { parseSortOrder, validateSortOrder } from "@/lib/formValidation";
 import { parseWorkInput } from "@/lib/workInput";
-
 export const PUT = withAdmin(async (request: Request, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params;
   const body = await request.json();
@@ -12,21 +11,26 @@ export const PUT = withAdmin(async (request: Request, context: { params: Promise
   const orderCheck = validateSortOrder(body.sortOrder);
   if (!orderCheck.ok) return NextResponse.json({ error: orderCheck.message }, { status: 400 });
   const w = parsed.value;
-  if (await queryOne("SELECT id FROM work_items WHERE slug = $1 AND id <> $2", [w.slug, id])) {
-    return NextResponse.json({ error: "That work slug is already in use." }, { status: 409 });
-  }
-  const result = await query(
-    `UPDATE work_items SET slug=$1,title=$2,title_bn=$3,category=$4,category_bn=$5,description=$6,description_bn=$7,
-      client_name=$8,location=$9,year=$10,image_url=$11,active=$12,sort_order=$13,updated_at=now()
-     WHERE id=$14 RETURNING id`,
-    [w.slug, w.title, w.title_bn, w.category, w.category_bn, w.description, w.description_bn, w.client_name, w.location, w.year, w.image_url, body.active !== false, parseSortOrder(body.sortOrder), id],
-  );
-  if (!result.length) return NextResponse.json({ error: "Work item not found." }, { status: 404 });
+  const result = await mutateTable("work_items", (document) => {
+    if (document.rows.some((row) => row.slug === w.slug && String(row.id) !== id)) return "duplicate" as const;
+    const row = document.rows.find((item) => String(item.id) === id);
+    if (!row) return "missing" as const;
+    Object.assign(row, { slug: w.slug, title: w.title, title_bn: w.title_bn, category: w.category, category_bn: w.category_bn, description: w.description, description_bn: w.description_bn, client_name: w.client_name, location: w.location, year: w.year, image_url: w.image_url, active: body.active !== false, sort_order: parseSortOrder(body.sortOrder), updated_at: timestamp() });
+    return "ok" as const;
+  });
+  if (result === "duplicate") return NextResponse.json({ error: "That work slug is already in use." }, { status: 409 });
+  if (result === "missing") return NextResponse.json({ error: "Work item not found." }, { status: 404 });
   return NextResponse.json({ ok: true });
 });
-
 export const DELETE = withAdmin(async (_request: Request, context: { params: Promise<{ id: string }> }) => {
   const { id } = await context.params;
-  await query("DELETE FROM work_items WHERE id=$1", [id]);
+  const rows = await mutateTable("work_items", (document) => {
+    const ids = new Set(document.rows.filter((row) => String(row.id) === id).map((row) => String(row.id)));
+    document.rows = document.rows.filter((row) => String(row.id) !== id);
+    return ids;
+  });
+  if (!rows.size) return NextResponse.json({ error: "Work item not found." }, { status: 404 });
+  await mutateTable("reviews", (document) => { for (const row of document.rows) if (String(row.work_id) === id) row.work_id = null; });
+  await mutateTable("user_reviews", (document) => { document.rows = document.rows.filter((row) => String(row.work_id) !== id); });
   return NextResponse.json({ ok: true });
 });
