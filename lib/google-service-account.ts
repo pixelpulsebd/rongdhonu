@@ -11,61 +11,89 @@ type ServiceAccountJson = {
 
 type Credentials = { email: string; privateKey: KeyObject; projectId?: string };
 
+const env = (name: string): string => process.env[name]?.trim() ?? "";
+const serviceAccountEmail = (): string => env("GOOGLE_SERVICE_ACCOUNT_EMAIL") || env("GOOGLE_CLIENT_EMAIL");
+
+/** True when direct environment credentials are present (complete or partial). */
+export function usesGoogleServiceAccountEnvironmentCredentials(): boolean {
+  return Boolean(serviceAccountEmail() || env("GOOGLE_PRIVATE_KEY"));
+}
+
 function credentialFilePath(): string {
-  const configured = process.env.GOOGLE_SERVICE_ACCOUNT_FILE?.trim() || "credentials/google-service-account.json";
+  const configured = env("GOOGLE_SERVICE_ACCOUNT_FILE") || "credentials/google-service-account.json";
   return isAbsolute(configured) ? configured : resolve(/*turbopackIgnore: true*/ process.cwd(), configured);
 }
 
 function readServiceAccountJson(): ServiceAccountJson {
+  // Prefer explicit environment variables. This works with .env locally and the
+  // hosting provider's environment-variable settings in production.
+  const email = serviceAccountEmail();
+  const privateKey = env("GOOGLE_PRIVATE_KEY");
+  if (email || privateKey) {
+    if (!email || !privateKey) {
+      throw new Error("Set both GOOGLE_SERVICE_ACCOUNT_EMAIL (or GOOGLE_CLIENT_EMAIL) and GOOGLE_PRIVATE_KEY. For GOOGLE_PRIVATE_KEY, encode PEM line breaks as \n inside .env.");
+    }
+    return {
+      type: "service_account",
+      client_email: email,
+      private_key: privateKey,
+      project_id: env("GOOGLE_PROJECT_ID") || undefined,
+    };
+  }
+
+  // Backwards-compatible fallback for the downloaded Google service-account JSON.
   const path = credentialFilePath();
   let content: string;
   try {
     content = readFileSync(path, "utf8");
   } catch {
-    throw new Error(`Google service-account JSON file was not found or could not be read at '${path}'. Set GOOGLE_SERVICE_ACCOUNT_FILE to the downloaded service-account key JSON path.`);
+    throw new Error(`Google service-account credentials were not found in environment variables or at '${path}'. Set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY, or configure GOOGLE_SERVICE_ACCOUNT_FILE.`);
   }
 
   let value: unknown;
   try {
     value = JSON.parse(content.replace(/^\uFEFF/, ""));
   } catch {
-    throw new Error(`The file at '${path}' is not valid JSON. Use the original downloaded Google service-account key JSON file.`);
+    throw new Error(`The file at '${path}' is not valid JSON. Use the original downloaded service-account key JSON file.`);
   }
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Google service-account credential file must contain a JSON object.");
   }
-  const json = value as ServiceAccountJson;
-  if (json.type !== "service_account" || typeof json.client_email !== "string" || typeof json.private_key !== "string") {
-    throw new Error("GOOGLE_SERVICE_ACCOUNT_FILE must point to a Google service-account key JSON file containing type, client_email, and private_key—not an OAuth client JSON file.");
-  }
-  return json;
+  return value as ServiceAccountJson;
 }
 
 function normalizePrivateKey(raw: string): string {
   let value = raw.trim().replace(/^\uFEFF/, "");
-  if (value.startsWith('"') && value.endsWith('"')) {
-    try {
-      const parsed: unknown = JSON.parse(value);
-      if (typeof parsed === "string") value = parsed;
-    } catch {
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (value.startsWith('"')) {
+      try {
+        const parsed: unknown = JSON.parse(value);
+        if (typeof parsed === "string") value = parsed;
+      } catch {
+        value = value.slice(1, -1);
+      }
+    } else {
       value = value.slice(1, -1);
     }
   }
-  value = value.replace(/\\+r\\+n/g, "\n").replace(/\\+n/g, "\n").replace(/\\+r/g, "\r").replace(/\r\n?/g, "\n").trim();
+  value = value.replace(/\\r\\n/g, "\n").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\r\n?/g, "\n").trim();
   if (!value.startsWith("-----BEGIN ") || !value.includes("PRIVATE KEY-----")) {
-    throw new Error("The private_key inside GOOGLE_SERVICE_ACCOUNT_FILE is not a complete PEM private key. Re-download the service-account JSON key from Google Cloud Console.");
+    throw new Error("GOOGLE_PRIVATE_KEY (or the private_key in GOOGLE_SERVICE_ACCOUNT_FILE) is not a complete PEM private key. Check that the full key was copied and newlines are encoded correctly.");
   }
   return `${value}\n`;
 }
 
 function createCredentials(): Credentials {
   const json = readServiceAccountJson();
-  const pem = normalizePrivateKey(json.private_key as string);
+  if (json.type !== "service_account" || typeof json.client_email !== "string" || typeof json.private_key !== "string") {
+    throw new Error("Configure GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY, or point GOOGLE_SERVICE_ACCOUNT_FILE to a Google service-account key JSON containing type, client_email, and private_key. OAuth client JSON is not supported.");
+  }
+  const pem = normalizePrivateKey(json.private_key);
   let privateKey: KeyObject;
   try {
     privateKey = createPrivateKey({ key: pem, format: "pem" });
   } catch {
-    throw new Error("The private_key in GOOGLE_SERVICE_ACCOUNT_FILE could not be parsed. Re-download the complete service-account key JSON file.");
+    throw new Error("The Google service-account private key could not be parsed. Verify the complete PEM key and its newline formatting.");
   }
   if (privateKey.asymmetricKeyType !== "rsa") {
     throw new Error(`Google service-account key must use RSA signing (received ${privateKey.asymmetricKeyType ?? "unknown"}).`);
@@ -82,7 +110,7 @@ export function getGoogleServiceAccountConfigurationError(): string | null {
     createCredentials();
     return null;
   } catch (error) {
-    return error instanceof Error ? error.message : "Google service-account JSON configuration is invalid.";
+    return error instanceof Error ? error.message : "Google service-account configuration is invalid.";
   }
 }
 

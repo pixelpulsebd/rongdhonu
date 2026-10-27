@@ -50,19 +50,11 @@ if (failures) {
 }
 
 async function getAccessToken() {
-  let raw;
-  try { raw = readFileSync(keyPath, "utf8").replace(/^\uFEFF/, ""); }
-  catch { throw new Error(`Google service-account JSON key not found at '${keyPath}'. Set GOOGLE_SERVICE_ACCOUNT_FILE to the downloaded key JSON path.`); }
-  let credentials;
-  try { credentials = JSON.parse(raw); }
-  catch { throw new Error(`The file at '${keyPath}' is not valid JSON.`); }
-  if (credentials?.type !== "service_account" || typeof credentials.client_email !== "string" || typeof credentials.private_key !== "string") {
-    throw new Error("GOOGLE_SERVICE_ACCOUNT_FILE must point to the downloaded service-account key JSON (type, client_email and private_key). OAuth client JSON is not supported for Drive storage.");
-  }
-  const privateKeyText = credentials.private_key.replace(/\\+n/g, "\n").replace(/\r\n?/g, "\n");
+  const credentials = readServiceAccountCredentials();
+  const privateKeyText = normalizePrivateKey(credentials.private_key);
   let privateKey;
   try { privateKey = createPrivateKey({ key: privateKeyText, format: "pem" }); }
-  catch { throw new Error("The private_key in the Google service-account JSON could not be parsed. Re-download the complete key file."); }
+  catch { throw new Error("Google service-account private key could not be parsed. Check the complete PEM key and newline formatting."); }
   const now = Math.floor(Date.now() / 1000);
   const encode = (value) => Buffer.from(JSON.stringify(value)).toString("base64url");
   const unsigned = `${encode({ alg: "RS256", typ: "JWT" })}.${encode({ iss: credentials.client_email, scope: SCOPE, aud: TOKEN_URL, iat: now, exp: now + 3600 })}`;
@@ -77,6 +69,33 @@ async function getAccessToken() {
   const body = await response.json().catch(() => ({}));
   if (!response.ok || !body.access_token) throw new Error(`Google service-account token exchange failed (${response.status}): ${body.error_description || body.error || "No access token returned."}`);
   return body.access_token;
+}
+
+function readServiceAccountCredentials() {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim() || process.env.GOOGLE_CLIENT_EMAIL?.trim() || "";
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.trim() || "";
+  if (email || privateKey) {
+    if (!email || !privateKey) throw new Error("Set both GOOGLE_SERVICE_ACCOUNT_EMAIL (or GOOGLE_CLIENT_EMAIL) and GOOGLE_PRIVATE_KEY in .env.");
+    return { type: "service_account", client_email: email, private_key: privateKey };
+  }
+  let raw;
+  try { raw = readFileSync(keyPath, "utf8").replace(/^\uFEFF/, ""); }
+  catch { throw new Error(`Google service-account credentials not found in environment variables or at '${keyPath}'. Set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY, or configure GOOGLE_SERVICE_ACCOUNT_FILE.`); }
+  let credentials;
+  try { credentials = JSON.parse(raw); }
+  catch { throw new Error(`The file at '${keyPath}' is not valid JSON.`); }
+  if (credentials?.type !== "service_account" || typeof credentials.client_email !== "string" || typeof credentials.private_key !== "string") {
+    throw new Error("Set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY, or point GOOGLE_SERVICE_ACCOUNT_FILE to a service-account key JSON. OAuth client JSON is not supported.");
+  }
+  return credentials;
+}
+
+function normalizePrivateKey(raw) {
+  let value = String(raw ?? "").trim().replace(/^\uFEFF/, "");
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  return value.replace(/\\r\\n/g, "\n").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\r\n?/g, "\n").trim() + "\n";
 }
 
 async function listFiles(accessToken) {

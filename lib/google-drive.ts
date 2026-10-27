@@ -1,5 +1,5 @@
 import "server-only";
-import { createGoogleServiceAccountAssertion, getGoogleServiceAccountConfigurationError, getGoogleServiceAccountEmail, hasGoogleServiceAccountCredentials } from "@/lib/google-service-account";
+import { createGoogleServiceAccountAssertion, getGoogleServiceAccountConfigurationError, getGoogleServiceAccountEmail, hasGoogleServiceAccountCredentials, usesGoogleServiceAccountEnvironmentCredentials } from "@/lib/google-service-account";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
@@ -50,8 +50,8 @@ export function isGoogleDriveConfigured(): boolean {
 export function getGoogleDriveConfigStatus() {
   return {
     configured: isGoogleDriveConfigured(),
-    authMode: "service-account-key-file" as const,
-    serviceAccountFile: env("GOOGLE_SERVICE_ACCOUNT_FILE") || "credentials/google-service-account.json",
+    authMode: usesGoogleServiceAccountEnvironmentCredentials() ? "environment-variables" as const : "service-account-key-file" as const,
+    serviceAccountFile: usesGoogleServiceAccountEnvironmentCredentials() ? null : env("GOOGLE_SERVICE_ACCOUNT_FILE") || "credentials/google-service-account.json",
     serviceAccountEmail: getGoogleServiceAccountEmail(),
     serviceAccountError: getGoogleServiceAccountConfigurationError(),
     hasDriveFolderId: Boolean(env("GOOGLE_DRIVE_FOLDER_ID")),
